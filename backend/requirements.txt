@@ -1,4 +1,4 @@
-fastapi
+fastapi[standard]
 python-magic
 yara-python
 uvicorn
