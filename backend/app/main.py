@@ -1,7 +1,8 @@
 # Main file for the backend application
 
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from app.analyzer import analyzeFile
 from app.hide import hideStringInImage, extractStringFromImage
 import os
@@ -45,7 +46,7 @@ async def scan(file: UploadFile = File(...)):
     return analysisResult
 
 @app.post("/hide")
-async def hide(image: UploadFile = File(...), message: str = ""):
+async def hide(image: UploadFile = File(...), message: str = Form(...)):
     # Save the uploaded image temporarily
     imageId = str(uuid.uuid4())
     imagePath = os.path.join(UPLOAD_DIRECTORY, imageId + "_" + image.filename)
@@ -58,18 +59,13 @@ async def hide(image: UploadFile = File(...), message: str = ""):
     # Hide the message in the image
     hideStringInImage(imagePath, message, outputImagePath)
 
-    # Read the modified image to return
-    with open(outputImagePath, "rb") as f:
-        encodedImageContent = f.read()
+    encondedImageContent = StreamingResponse(open(outputImagePath, "rb"), media_type="image/png")
 
     # Clean up the uploaded and encoded images
     os.remove(imagePath)
     os.remove(outputImagePath)
 
-    return {
-        "filename": "encoded_" + image.filename,
-        "content": encodedImageContent
-    }
+    return encondedImageContent
 
 
 @app.post("/extract")

@@ -1,59 +1,67 @@
-# This file will contain the logic for hiding string in a picture using LSB steganography
+# Logic for hiding and extracting a UTF-8 string in an image using LSB steganography
 
 from PIL import Image
 import os
+from typing import Optional
+
 
 def hideStringInImage(imagePath: str, secretMessage: str, outputImagePath: str) -> None:
-    # Open the image
-    image = Image.open(imagePath)
-    encoded = image.copy()
-    width, height = image.size
+    """Hide `secretMessage` (UTF-8) inside the image at `imagePath` and save to `outputImagePath`.
 
-    # Convert the secret message to binary
-    binaryMessage = ''.join(format(ord(char), '08b') for char in secretMessage)
-    binaryMessage += '1111111111111110'  # Delimiter to indicate end of message
+    Protocol:
+    - 32-bit big-endian unsigned integer length prefix (number of bytes)
+    - message bytes (UTF-8)
 
-    dataIndex = 0
-    messageLength = len(binaryMessage)
+    Raises ValueError if the image doesn't have enough capacity.
+    """
+    img = Image.open(imagePath).convert("RGB")
+    binary = ''.join(format(ord(c), '08b') for c in secretMessage) + '00000000'  # fin de message
+    pixels = img.load()
+
+    width, height = img.size
+    idx = 0
 
     for y in range(height):
         for x in range(width):
-            if dataIndex < messageLength:
-                pixel = list(encoded.getpixel((x, y)))
-                for n in range(3):
-                    if dataIndex < messageLength:
-                        pixel[n] = pixel[n] & ~1 | int(binaryMessage[dataIndex])
-                        dataIndex += 1
-                encoded.putpixel((x, y), tuple(pixel))
+            if idx < len(binary):
+                r, g, b = pixels[x, y]
+                r = (r & ~1) | int(binary[idx])
+                print(r)
+                pixels[x, y] = (r, g, b)
+                idx += 1
             else:
                 break
-        if dataIndex >= messageLength:
+        if idx >= len(binary):
             break
+    img.save(outputImagePath)
 
-    # Save the modified image
-    encoded.save(outputImagePath)
 
 def extractStringFromImage(imagePath: str) -> str:
-    # Open the image
-    image = Image.open(imagePath)
-    width, height = image.size
+    """Extract a hidden UTF-8 string from the image at `imagePath`.
+    """
+    img = Image.open(imagePath).convert("RGB")
+    pixels = img.load()
+    width, height = img.size
 
-    binaryMessage = ""
+    bits = []
+    byte_bits = ""
+
     for y in range(height):
         for x in range(width):
-            pixel = list(image.getpixel((x, y)))
-            for n in range(3):
-                binaryMessage += str(pixel[n] & 1)
+            r, g, b = pixels[x, y]
 
-    # Split by 8-bits
-    allBytes = [binaryMessage[i:i+8] for i in range(0, len(binaryMessage), 8)]
-    
-    # Convert from bits to characters
-    message = ""
-    for byte in allBytes:
-        char = chr(int(byte, 2))
-        if char == chr(255):  # Delimiter found
-            break
-        message += char
+            # accumule 1 bit
+            byte_bits += str(r & 1)
 
-    return message
+            # dès qu'on a 8 bits → on peut lire un caractère
+            if len(byte_bits) == 8:
+                byte = int(byte_bits, 2)
+                if byte == 0:  # fin du message
+                    return "".join(chr(b) for b in bits)
+
+                bits.append(byte)
+                byte_bits = ""
+
+    return ""
+
+

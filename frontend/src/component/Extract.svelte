@@ -1,5 +1,5 @@
 <script>
-    export let onAnalyze = (file) => {};
+    import { extractData } from "../lib/api.js";
 
     let file = null;
     let isDragging = false;
@@ -22,11 +22,12 @@
         e.preventDefault();
         isDragging = false;
     }
+    
+    let result = null
 
-    function handleAnalyze() {
-        if (file) {
-            onAnalyze(file);
-        }
+    async function handleUpload(file) {
+        if (!file) return;
+        result = await extractData(file);
     }
 
 </script>
@@ -40,7 +41,7 @@
         role="button"
         tabindex="0"
         aria-label="Sélectionner un fichier ou glisser-déposer ici"
-        on:keydown={handleAnalyze}
+        on:keydown={() => handleUpload(file)}
         on:drop={handleDrop}
         on:dragover={handleDragOver}
         on:dragleave={handleDragLeave}
@@ -56,14 +57,25 @@
           Drag and drop a file here or click to select
         </p>
       {/if}
+
+      
+
+
   </div>
 
 
   {#if file}
-  <button on:click={handleAnalyze} class="AnalyzeButton">
-      Analyze
+  <button on:click={() => handleUpload(file)} class="ExtractButton">
+      Extract
   </button>
   {/if}
+
+    {#if result}
+        <div class = "PopUpResult">
+            <h2>Result :</h2>
+            <pre>{JSON.stringify(result, null, 2)}</pre>
+        </div>
+    {/if}
 </div>
 
 <style>
@@ -89,7 +101,7 @@
         margin: 3em 3em;
     }
 
-    .AnalyzeButton {
+    .ExtractButton {
         background-color: hwb(120 9% 30%);
         padding: 0.75rem 1.5rem;
         border: none;
@@ -101,7 +113,22 @@
         bottom: 10em;
     }
 
-    .AnalyzeButton:hover {
+    .ExtractButton:hover {
         background-color: #357ABD;
+    }
+
+    .PopUpResult {
+        position: absolute;
+        top: 10em;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgb(255, 255, 255);
+        border: 2px solid rgb(0, 0, 0);
+        border-radius: 8px;
+        padding: 1em;
+        max-width: 80%;
+        max-height: 60vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 </style>

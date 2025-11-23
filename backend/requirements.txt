@@ -2,3 +2,4 @@ fastapi[standard]
 python-magic
 yara-python
 uvicorn
+pillow
