@@ -3,6 +3,7 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from app.analyzer import analyzeFile
+from app.hide import hideStringInImage, extractStringFromImage
 import os
 import uuid
 
@@ -42,3 +43,51 @@ async def scan(file: UploadFile = File(...)):
     os.remove(filePath)
 
     return analysisResult
+
+@app.post("/hide")
+async def hide(image: UploadFile = File(...), message: str = ""):
+    # Save the uploaded image temporarily
+    imageId = str(uuid.uuid4())
+    imagePath = os.path.join(UPLOAD_DIRECTORY, imageId + "_" + image.filename)
+    outputImagePath = os.path.join(UPLOAD_DIRECTORY, imageId + "_encoded_" + image.filename)
+
+    with open(imagePath, "wb") as f:
+        content = await image.read()
+        f.write(content)
+
+    # Hide the message in the image
+    hideStringInImage(imagePath, message, outputImagePath)
+
+    # Read the modified image to return
+    with open(outputImagePath, "rb") as f:
+        encodedImageContent = f.read()
+
+    # Clean up the uploaded and encoded images
+    os.remove(imagePath)
+    os.remove(outputImagePath)
+
+    return {
+        "filename": "encoded_" + image.filename,
+        "content": encodedImageContent
+    }
+
+
+@app.post("/extract")
+async def extract(image: UploadFile = File(...)):
+    # Save the uploaded image temporarily
+    imageId = str(uuid.uuid4())
+    imagePath = os.path.join(UPLOAD_DIRECTORY, imageId + "_" + image.filename)
+
+    with open(imagePath, "wb") as f:
+        content = await image.read()
+        f.write(content)
+
+    # Extract the hidden message from the image
+    secretMessage = extractStringFromImage(imagePath)
+
+    # Clean up the uploaded image
+    os.remove(imagePath)
+
+    return {
+        "message": secretMessage
+    }
