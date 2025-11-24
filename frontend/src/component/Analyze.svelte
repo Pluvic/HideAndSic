@@ -28,6 +28,7 @@
     async function handleUpload(file) {
         if (!file) return;
         result = await scanFile(file);
+        console.log(result);
     }
 
 </script>
@@ -71,9 +72,28 @@
   {/if}
 
     {#if result}
+    <!-- hashes, mime_type, entropy, yara_detected, yara_results-->
         <div class = "PopUpResult">
             <h2>Result :</h2>
-            <pre>{JSON.stringify(result, null, 2)}</pre>
+            <h3>File: {file.name}</h3>
+            <h3>Hashes</h3>
+            <ul>
+                <li>MD5: {result.hashes.md5}</li>
+                <li>SHA1: {result.hashes.sha1}</li>
+                <li>SHA256: {result.hashes.sha256}</li>
+            </ul>
+            <h3>MIME Type: {result.mime_type}</h3>
+            <h3>Entropy: {result.entropy}</h3>
+            <h3>YARA Detections: {result.yara_detected ? 'Yes' : 'No'}</h3>
+            {#if result.yara_detected}
+                <h3>YARA Results:</h3>
+                <ul>
+                    {#each result.yara_results as yara}
+                        <li>{yara}</li>
+                    {/each}
+                </ul>
+            {/if}
+
         </div>
     {/if}
 </div>

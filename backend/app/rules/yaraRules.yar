@@ -1,15 +1,23 @@
-rule Suspicious_File {
+rule Suspicious_LSB_Red_Channel
+{
     meta:
-        description = "Detects files with suspicious characteristics"
-        author = "Security Team"
-        date = "2025-11-20"
-        version = "1.0"
+        description = "Detects possible LSB steganography in PNG images by checking abnormal LSB distribution"
+        author = "Victor"
+        method = "LSB on red channel"
 
     strings:
-        $mz = "MZ"
-        $pe = "PE"
-        $upx = "UPX"
-        
+        // PNG signature
+        $png = { 89 50 4E 47 0D 0A 1A 0A }
+
     condition:
-        $mz at 0 or $pe or $upx
+        // Only look at PNGs
+        $png at 0 and
+
+        // Too many bytes ending in 0x00 or 0x01 (LSB anomaly)
+        (
+            uint8(100) % 2 == uint8(200) % 2 and
+            uint8(300) % 2 == uint8(400) % 2 and
+            uint8(500) % 2 == uint8(600) % 2 and
+            uint8(700) % 2 == uint8(800) % 2
+        )
 }

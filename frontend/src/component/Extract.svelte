@@ -73,7 +73,8 @@
     {#if result}
         <div class = "PopUpResult">
             <h2>Result :</h2>
-            <pre>{JSON.stringify(result, null, 2)}</pre>
+            <h3>Extracted Data:</h3>
+            <p>{result.message}</p>
         </div>
     {/if}
 </div>

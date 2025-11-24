@@ -1,4 +1,5 @@
 import hashlib
+from itertools import count
 import math
 
 def calculateHashes(filePath: str) -> dict:
@@ -23,18 +24,15 @@ def calculateEntropy(filePath: str) -> float:
     """Calculate the entropy of a file."""
     with open(filePath, "rb") as f:
         byteArr = list(f.read())
-        fileSize = len(byteArr)
-        if fileSize == 0:
-            return 0.0
-
-        freqList = [0] * 256
+        if not byteArr:
+            return 0
+        occurrences = [0] * 256
         for byte in byteArr:
-            freqList[byte] += 1
-
-        entropy = 0.0
-        for freq in freqList:
-            if freq > 0:
-                prob = freq / fileSize
-                entropy -= prob * math.log2(prob)
-
+            occurrences[byte] += 1
+        entropy = 0
+        for count in occurrences:
+            if count == 0:
+                continue
+            p = count / len(byteArr)
+            entropy -= p * math.log2(p)
         return entropy
