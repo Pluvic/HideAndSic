@@ -3,7 +3,9 @@
 
     let file = null;
     let isDragging = false;
+    let result = null
 
+    // Handle file drop event
     function handleDrop(e) {
         e.preventDefault();
         isDragging = false;
@@ -13,18 +15,19 @@
         }
     }
 
+    // Handle drag over event
     function handleDragOver(e) {
         e.preventDefault();
         isDragging = true;
     }
 
+    // Handle drag leave event
     function handleDragLeave(e) {
         e.preventDefault();
         isDragging = false;
     }
-    
-    let result = null
 
+    // Handle file upload and extract data
     async function handleUpload(file) {
         if (!file) return;
         result = await extractData(file);
@@ -32,7 +35,6 @@
 
 </script>
 
-<!-- Grande zone drag & drop -->
 <div class="container">
     <div
         class="dragAndDrop"
@@ -40,35 +42,32 @@
         class:border-gray-300={!isDragging}
         role="button"
         tabindex="0"
-        aria-label="Sélectionner un fichier ou glisser-déposer ici"
+        aria-label="Select an image file or drag and drop here"
         on:keydown={() => handleUpload(file)}
         on:drop={handleDrop}
         on:dragover={handleDragOver}
         on:dragleave={handleDragLeave}
         on:click={() => document.getElementById('fileInput').click()}
     >
-    <input style="display: none;" type="file" id="fileInput" on:change={(e) => { file = e.target.files[0]; }} />
-      {#if file}
-        <p class="text-gray-700 text-lg">
-          File loaded: <strong>{file.name}</strong>
-        </p>
-      {:else}
-        <p class="text-gray-500 text-xl">
-          Drag and drop a file here or click to select
-        </p>
-      {/if}
-
+        <input style="display: none;" type="file" id="fileInput" on:change={(e) => { file = e.target.files[0]; }} />
+        {#if file}
+            <p class="text-gray-700 text-lg">
+                File loaded: <strong>{file.name}</strong>
+            </p>
+        {:else}
+            <p class="text-gray-500 text-xl">
+                Drag and drop a file here or click to select
+            </p>
+        {/if}
       
+    </div>
 
 
-  </div>
-
-
-  {#if file}
-  <button on:click={() => handleUpload(file)} class="ExtractButton">
-      Extract
-  </button>
-  {/if}
+    {#if file}
+    <button on:click={() => handleUpload(file)} class="ExtractButton">
+        Extract
+    </button>
+    {/if}
 
     {#if result}
         <div class = "PopUpResult">

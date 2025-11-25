@@ -3,7 +3,9 @@
 
     let file = null;
     let isDragging = false;
+    let result = null
 
+    // Handle file drop event
     function handleDrop(e) {
         e.preventDefault();
         isDragging = false;
@@ -13,18 +15,19 @@
         }
     }
 
+    // Handle drag over event
     function handleDragOver(e) {
         e.preventDefault();
         isDragging = true;
     }
 
+    // Handle drag leave event
     function handleDragLeave(e) {
         e.preventDefault();
         isDragging = false;
     }
-    
-    let result = null
 
+    // Handle file upload and analyze data
     async function handleUpload(file) {
         if (!file) return;
         result = await scanFile(file);
@@ -33,7 +36,6 @@
 
 </script>
 
-<!-- Grande zone drag & drop -->
 <div class="container">
     <div
         class="dragAndDrop"
@@ -48,31 +50,26 @@
         on:dragleave={handleDragLeave}
         on:click={() => document.getElementById('fileInput').click()}
     >
-    <input style="display: none;" type="file" id="fileInput" on:change={(e) => { file = e.target.files[0]; }} />
-      {#if file}
-        <p class="text-gray-700 text-lg">
-          File loaded: <strong>{file.name}</strong>
-        </p>
-      {:else}
-        <p class="text-gray-500 text-xl">
-          Drag and drop a file here or click to select
-        </p>
-      {/if}
-
-      
-
-
+        <input style="display: none;" type="file" id="fileInput" on:change={(e) => { file = e.target.files[0]; }} />
+        {#if file}
+            <p class="text-gray-700 text-lg">
+                File loaded: <strong>{file.name}</strong>
+            </p>
+        {:else}
+            <p class="text-gray-500 text-xl">
+                Drag and drop a file here or click to select
+            </p>
+        {/if}
   </div>
 
 
-  {#if file}
-  <button on:click={() => handleUpload(file)} class="AnalyzeButton">
-      Analyze
-  </button>
-  {/if}
+    {#if file}
+    <button on:click={() => handleUpload(file)} class="AnalyzeButton">
+        Analyze
+    </button>
+    {/if}
 
     {#if result}
-    <!-- hashes, mime_type, entropy, yara_detected, yara_results-->
         <div class = "PopUpResult">
             <h2>Result :</h2>
             <h3>File: {file.name}</h3>
@@ -93,7 +90,6 @@
                     {/each}
                 </ul>
             {/if}
-
         </div>
     {/if}
 </div>

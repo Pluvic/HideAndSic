@@ -41,6 +41,7 @@
 </main>
 
 <style>
+    /* Style for the main container */
     main {
         display: flex;
         flex-direction: column;
@@ -48,7 +49,7 @@
         position: relative;
     }
 
-
+    /* Style for the header */
     header {
         display: flex;
         justify-content: space-between;
@@ -57,6 +58,7 @@
         height: 8em;
         box-shadow: 0 2px 8px rgb(255, 255, 255);
     }
+
     h1 {
         color:white;
         padding: 0.5em;

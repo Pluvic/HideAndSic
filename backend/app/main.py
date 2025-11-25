@@ -3,6 +3,7 @@
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
+import magic
 from app.analyzer import analyzeFile
 from app.hide import hideStringInImage, extractStringFromImage
 import os
@@ -47,6 +48,11 @@ async def scan(file: UploadFile = File(...)):
 
 @app.post("/hide")
 async def hide(image: UploadFile = File(...), message: str = Form(...)):
+    # Gather the mime type based on file extension
+    mime = magic.Magic(mime=True)
+    mimeType = mime.from_buffer(await image.read())
+    await image.seek(0)
+
     # Save the uploaded image temporarily
     imageId = str(uuid.uuid4())
     imagePath = os.path.join(UPLOAD_DIRECTORY, imageId + "_" + image.filename)
@@ -58,8 +64,9 @@ async def hide(image: UploadFile = File(...), message: str = Form(...)):
 
     # Hide the message in the image
     hideStringInImage(imagePath, message, outputImagePath)
+    
 
-    encondedImageContent = StreamingResponse(open(outputImagePath, "rb"), media_type="image/png")
+    encondedImageContent = StreamingResponse(open(outputImagePath, "rb"), media_type=mimeType)
 
     # Clean up the uploaded and encoded images
     os.remove(imagePath)

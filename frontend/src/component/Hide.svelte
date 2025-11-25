@@ -6,7 +6,9 @@
     let isDragging = false;
     let url = null;
     let filename = null;
+    let result = null
 
+    // Handle file drop event
     function handleDrop(e) {
         e.preventDefault();
         isDragging = false;
@@ -16,27 +18,26 @@
         }
     }
 
+    // Handle drag over event
     function handleDragOver(e) {
         e.preventDefault();
         isDragging = true;
     }
 
+    // Handle drag leave event
     function handleDragLeave(e) {
         e.preventDefault();
         isDragging = false;
     }
-    
-    let result = null
 
+    // Handle file upload and hide message
     async function handleUpload(image) {
         if (!image || message === "") return;
         result = await hideData(image, message);
 
-        // Create a URL for the returned image blob
         url = URL.createObjectURL(result.blob);
         filename = result.filename;
 
-        // --- FORCED DOWNLOAD ---
         const link = document.createElement("a");
         link.href = url;
         link.download = filename;
@@ -44,14 +45,11 @@
         link.click();
         document.body.removeChild(link);
 
-        // optional : cleanup
         URL.revokeObjectURL(url);
-}
-
+    }
 
 </script>
 
-<!-- Grande zone drag & drop -->
 <div class="container">
     <div
         class="dragAndDrop"
@@ -66,28 +64,28 @@
         on:dragleave={handleDragLeave}
         on:click={() => document.getElementById('fileInput').click()}
     >
-    <input style="display: none;" type="file" id="fileInput" on:change={(e) => { file = e.target.files[0]; }} />
-      {#if file}
-        <p class="text-gray-700 text-lg">
-          File loaded: <strong>{file.name}</strong>
-        </p>
-      {:else}
-        <p class="text-gray-500 text-xl">
-          Drag and drop an image here or click to select
-        </p>
-      {/if}
-  </div>
-  <div class= "messageInput">
-    <input type="text" placeholder="Enter message to hide" bind:value={message} />
-  </div>
+        <input style="display: none;" type="file" id="fileInput" on:change={(e) => { file = e.target.files[0]; }} />
+        {#if file}
+            <p class="text-gray-700 text-lg">
+                File loaded: <strong>{file.name}</strong>
+            </p>
+        {:else}
+            <p class="text-gray-500 text-xl">
+                Drag and drop an image here or click to select
+            </p>
+        {/if}
+    </div>
+
+    <div class= "messageInput">
+        <input type="text" placeholder="Enter message to hide" bind:value={message} />
+    </div>
 
 
-  {#if file && message !== ""}
-  <button on:click={() => handleUpload(file)} class="AnalyzeButton">
-      Hide
-  </button>
-  {/if}
-
+    {#if file && message !== ""}
+        <button on:click={() => handleUpload(file)} class="AnalyzeButton">
+            Hide
+        </button>
+    {/if}
 </div>
 
 <style>
