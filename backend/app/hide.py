@@ -24,8 +24,7 @@ def hideStringInImage(imagePath: str, secretMessage: str, outputImagePath: str) 
                 break
         if idx >= len(binary):
             break
-    img.save(outputImagePath)
-
+    img.save(outputImagePath, "PNG")
 
 def extractStringFromImage(imagePath: str) -> str:
     """Extract a hidden UTF-8 string from the image at `imagePath`.
