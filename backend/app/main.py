@@ -5,12 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 import magic
 from app.analyzer import analyzeFile
-from app.hide import hideStringInImage, extractStringFromImage
+from app.hide import hideStringInImage, extractStringFromImage, parseExtractedMessage, setUpMessageHiding
 import os
 import uuid
 
 app = FastAPI()
 
+KEY = b'Sixteen byte keySixteen byte key'
 UPLOAD_DIRECTORY = "/tmp/uploads/"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
@@ -47,7 +48,7 @@ async def scan(file: UploadFile = File(...)):
     return analysisResult
 
 @app.post("/hide")
-async def hide(image: UploadFile = File(...), message: str = Form(...)):
+async def hide(image: UploadFile = File(...), message: str = Form(...), encrypt: bool = Form(False)):
     # Gather the mime type based on file extension
     mime = magic.Magic(mime=True)
     mimeType = mime.from_buffer(await image.read())
@@ -62,10 +63,12 @@ async def hide(image: UploadFile = File(...), message: str = Form(...)):
         content = await image.read()
         f.write(content)
 
-    # Hide the message in the image
-    hideStringInImage(imagePath, message, outputImagePath)
-    
+    # Prepare the message for hiding
+    preparedMessage = setUpMessageHiding(message, encrypt, KEY)
 
+    # Hide the message in the image
+    hideStringInImage(imagePath, preparedMessage, outputImagePath)
+    
     encondedImageContent = StreamingResponse(open(outputImagePath, "rb"), media_type=mimeType)
 
     # Clean up the uploaded and encoded images
@@ -86,11 +89,13 @@ async def extract(image: UploadFile = File(...)):
         f.write(content)
 
     # Extract the hidden message from the image
-    secretMessage = extractStringFromImage(imagePath)
+    secretData = extractStringFromImage(imagePath)
+
+    parsedMessage = parseExtractedMessage(secretData, KEY)
 
     # Clean up the uploaded image
     os.remove(imagePath)
 
     return {
-        "message": secretMessage
+        "message": parsedMessage
     }

@@ -2,6 +2,7 @@
     import { hideData } from "../lib/api.js";
 
     let file = null;
+    let encrypt = false;
     let message = "";
     let isDragging = false;
     let url = null;
@@ -33,7 +34,7 @@
     // Handle file upload and hide message
     async function handleUpload(image) {
         if (!image || message === "") return;
-        result = await hideData(image, message);
+        result = await hideData(image, message, encrypt);
 
         url = URL.createObjectURL(result.blob);
         filename = result.filename;
@@ -78,6 +79,11 @@
 
     <div class= "messageInput">
         <input type="text" placeholder="Enter message to hide" bind:value={message} />
+
+        <div>
+            <label for="encrypt">Encrypt Message</label>
+            <input type="checkbox" id="encrypt" bind:checked={encrypt} />
+        </div>
     </div>
 
 
@@ -99,6 +105,10 @@
     }
 
     .messageInput {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
         border: 4px solid;
         border-radius: 8px;
         background-color: rgb(239, 239, 239);
@@ -109,12 +119,10 @@
         width: 100%;
     }
 
-    input[type="text"] {
-        vertical-align: middle;
-        height: 5%;
-        width: 80%;
-        margin-top:30%;
+    .messageInput > div {
+        margin-top: 1em;
     }
+
 
     .dragAndDrop {
         border: 4px dashed;

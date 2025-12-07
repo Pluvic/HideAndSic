@@ -3,3 +3,4 @@ python-magic
 yara-python
 uvicorn
 pillow
+cryptography
