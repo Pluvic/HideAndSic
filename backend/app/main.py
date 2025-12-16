@@ -16,13 +16,13 @@ UPLOAD_DIRECTORY = "/tmp/uploads/"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
 origins = [
-    "http://localhost:3000",  # ton frontend
+    "http://localhost:3000",
     "http://127.0.0.1:3000"
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # ou ["*"] pour tout autoriser en dev
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -21,3 +21,31 @@ rule Suspicious_LSB_Red_Channel
             uint8(700) % 2 == uint8(800) % 2
         )
 }
+
+rule Bash_Script_Disguised
+{
+    meta:
+        description = "Detects Bash scripts even if file extension is misleading"
+        author = "Victor"
+        category = "Script Detection"
+        forensic = "demo"
+
+    strings:
+        $shebang1 = "#!/bin/bash"
+        $shebang2 = "#!/usr/bin/env bash"
+        $cmd1 = "echo "
+        $cmd2 = "printf "
+        $cmd3 = "exit"
+        $comment = "# "
+
+    condition:
+        (
+            $shebang1 or $shebang2
+        )
+        or
+        (
+            2 of ($cmd*)
+            and $comment
+        )
+}
+
