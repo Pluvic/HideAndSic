@@ -7,7 +7,10 @@
 
 <main>
     <header>
-        <h1>Hide&Sic</h1>
+        <div id="logo-title" style="display: flex; align-items: center;">
+            <img src="/LogoHideAndSic.png" alt="Logo" width="80px" height="80px"/>
+            <h1>Hide&Sic</h1>
+        </div>
 
         <nav>
             {#if $currentPage === 'analyze'}
