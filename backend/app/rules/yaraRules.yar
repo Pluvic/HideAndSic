@@ -22,30 +22,62 @@ rule Suspicious_LSB_Red_Channel
         )
 }
 
-rule Bash_Script_Disguised
+rule Script_Disguised_Shebang
 {
     meta:
-        description = "Detects Bash scripts even if file extension is misleading"
-        author = "Victor"
-        category = "Script Detection"
-        forensic = "demo"
-
+        description = "Detect script files disguised with another extension"
+        author = "HideAndSic"
     strings:
-        $shebang1 = "#!/bin/bash"
-        $shebang2 = "#!/usr/bin/env bash"
-        $cmd1 = "echo "
-        $cmd2 = "printf "
-        $cmd3 = "exit"
-        $comment = "# "
-
+        $bash = "#!/bin/bash"
+        $sh   = "#!/bin/sh"
+        $py   = "#!/usr/bin/python"
+        $ps   = "powershell"
     condition:
-        (
-            $shebang1 or $shebang2
-        )
-        or
-        (
-            2 of ($cmd*)
-            and $comment
-        )
+        any of them
 }
+
+rule Suspicious_Executable_Extension
+{
+    meta:
+        description = "Detects executable files with uncommon extensions"
+        author = "Victor"
+    strings:
+        $exe_ext = ".exe"
+        $dll_ext = ".dll"
+        $scr_ext = ".scr"
+        $bat_ext = ".bat"
+    condition:
+        any of them
+}
+
+rule PNG_Data_After_IEND
+{
+    meta:
+        description = "Detect extra data after PNG IEND chunk"
+    strings:
+        $iend = { 49 45 4E 44 AE 42 60 82 }
+    condition:
+        $iend and filesize > @iend + 8
+}
+
+rule Embedded_Archive
+{
+    meta:
+        description = "Detect embedded archive headers"
+    strings:
+        $zip  = { 50 4B 03 04 }
+        $gzip = { 1F 8B }
+    condition:
+        any of them
+}
+
+rule Possible_Encrypted_Data
+{
+    meta:
+        description = "Heuristic for encrypted or packed data"
+    condition:
+        filesize > 1024 and
+        for any i in (0..filesize-1) : (uint8(i) > 0x20 and uint8(i) < 0x7E)
+}
+
 
